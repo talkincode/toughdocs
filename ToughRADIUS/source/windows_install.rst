@@ -20,21 +20,17 @@ ToughRADIUS为windows提供了一个快速部署的模式，帮助使用者快�
 
 ToughRADIUS主要采用MySQL(5.0以上版本)存储数据，在部署ToughRADIUS之前请自行安装MySQL（安装步骤请参考MySQL相关文档）,安装MySQL后确保MySQL为运行状态。
 
-+ 修改配置文件 config.json中的mysql选项,请修改数据库地址用户名密码等选项与实际相符。
++ 修改配置文件 radiusd.conf中的mysql选项,请修改数据库地址用户名密码等选项与实际相符。
 
-.. code-block:: javascript
-
-    "database": 
-    {
-        "dbtype":"mysql",
-        "maxusage": 10, 
-        "passwd": "radius",
-        "charset": "utf8", 
-        "db": "toughradius",
-        "host": "192.168.59.103",
-        "port": 3306,
-        "user": "admin"
-    },
+    [database]
+    dbtype = mysql
+    host = 127.0.0.1
+    port = 3306
+    db = toughradius
+    maxusage = 10
+    charset = utf8
+    user = root
+    passwd = 
 
 + 运行createdb.bat创建数据库表，ToughRADIUS采用脚本工具自动创建数据库，无需SQL脚本。
 
@@ -46,7 +42,7 @@ ToughRADIUS主要采用MySQL(5.0以上版本)存储数据，在部署ToughRADIUS
 
     #按提示进行操作
 
-    Z:\github\ToughRADIUS>toughrad.exe ..\createdb.py -c ../config.json || pause
+    Z:\github\ToughRADIUS>toughrad.exe ..\createdb.py -c ../radiusd.conf || pause
 
     starting create and init database...
 
@@ -63,7 +59,7 @@ ToughRADIUS主要采用MySQL(5.0以上版本)存储数据，在部署ToughRADIUS
 应用配置说明
 -------------------------------
 
-在config.json文件中，可以指定几乎所有的配置参数。
+在radiusd.conf文件中，可以指定几乎所有的配置参数。
 
 databse部分是数据库的配置，修改配置文件数据库部分的主机，端口，用户名，数据库名，密码和实际相符合。
 
@@ -73,42 +69,39 @@ admin部分是web管理控制台配置，注意服务端口的配置，如果与
 
 customer是自助服务系统配置，注意服务端口的配置，如果与系统其他应用冲突请修改。
 
-.. code-block:: javascript
+    [DEFAULT]
+    debug = 1
+    tz = CST-8
+    secret = 1qazxsw23edcvfr45tgbnhy67ujmki89
 
-    {
-        "database": 
-        {
-            "dbtype":"mysql",
-            "maxusage": 10, 
-            "passwd": "",
-            "charset": "utf8", 
-            "db": "toughradius",
-            "host": "127.0.0.1",
-            "port": 3306,
-            "user": "root"
-        },   
-        "radiusd":
-        {
-            "authport": 1812,
-            "acctport": 1813,
-            "adminport": 1815,
-            "dictfile": "./radiusd/dict/dictionary",
-            "debug":1,
-            "cache_timeout":600
-        },
-        "admin":
-        {
-            "httpport":1816,
-            "debug":1
-        },
-        "customer":
-        {
-            "httpport":1817,
-            "debug":1
-        },
-        "tz":"Asia/Shanghai",
-        "secret":"1qazxsw23edcvfr45tgbnhy67ujmki89"        
-    }
+    [database]
+    dbtype = mysql
+    host = 127.0.0.1
+    port = 3306
+    db = toughradius
+    maxusage = 10
+    charset = utf8
+    user = root
+    passwd = 
+
+    [radiusd]
+    acctport = 1813
+    adminport = 1815
+    authport = 1812
+    dictfile = radiusd/dict/dictionary
+    cache_timeout = 600
+
+    [admin]
+    port = 1816
+
+    [customer]
+    port = 1817
+
+    [backup]
+    ftpserver = 127.0.0.1
+    ftpport = 21
+    ftpuser = user
+    ftppwd = pwd
 
 
 运行radiusd服务
@@ -120,7 +113,7 @@ radiusd.bat内容
 
 .. code-block:: bash
 
-    toughrad.exe ../radiusd/server.py -c ../config.json  -dict ../radiusd/dict/dictionary || pause   
+    toughrad.exe ../radiusd/server.py -c ../radiusd.conf  -dict ../radiusd/dict/dictionary || pause   
 
 
 运行web管理服务
@@ -132,7 +125,7 @@ console.bat脚本内容
 
 .. code-block:: bash
 
-    cd ..\console && ..\windows\toughrad.exe admin.py -c ../config.json || pause
+    cd ..\console && ..\windows\toughrad.exe admin.py -c ../radiusd.conf || pause
 
 
 当启动web控制台服务后，就可以通过浏览器访问管理界面了，在浏览器地址栏输入：http://127.0.0.1:1816,默认的管理员密码为admin/root
@@ -151,6 +144,6 @@ customer.bat脚本内容
 
 .. code-block:: bash
 
-    cd ..\console && ..\windows\toughrad.exe customer.py -c ../config.json || pause
+    cd ..\console && ..\windows\toughrad.exe customer.py -c ../radiusd.conf || pause
 
 
