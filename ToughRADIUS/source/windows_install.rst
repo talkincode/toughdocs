@@ -20,7 +20,7 @@ ToughRADIUS为windows提供了一个快速部署的模式，帮助使用者快�
 
 ToughRADIUS主要采用MySQL(5.0以上版本)存储数据，在部署ToughRADIUS之前请自行安装MySQL（安装步骤请参考MySQL相关文档）,安装MySQL后确保MySQL为运行状态。
 
-+ 修改配置文件 radiusd.conf中的mysql选项,请修改数据库地址用户名密码等选项与实际相符。
++ 修改配置文件 radiusd.conf中的mysql选项,请修改数据库地址用户名密码等选项与实际相符::
 
     [database]
     dbtype = mysql
@@ -67,7 +67,7 @@ radiusd是Radius核心服务的配置，注意adminport是提供给web管理系�
 
 admin部分是web管理控制台配置，注意服务端口的配置，如果与系统其他应用冲突请修改。
 
-customer是自助服务系统配置，注意服务端口的配置，如果与系统其他应用冲突请修改。
+customer是自助服务系统配置，注意服务端口的配置，如果与系统其他应用冲突请修改::
 
     [DEFAULT]
     debug = 1
