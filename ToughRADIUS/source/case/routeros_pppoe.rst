@@ -15,5 +15,3 @@ ToughRADIUS与RouterOS对接之PPPOE Server配置
 
 .. image:: ../_static/images/ros_case_pppoe_server.jpg
 
-
-完成以上配置，可以使用终端拨号测试一下了，ToughRADIUS中BAS，资费与用户的配置请参见Hotspot对接部分，这里不再讲述。

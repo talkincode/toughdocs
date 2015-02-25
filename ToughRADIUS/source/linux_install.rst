@@ -6,115 +6,179 @@ ToughRADIUS是基于Python及高性能异步网络框架Twisted开发，对linux
 目前在Linux环境下，ToughRADIUS提供了自动化安装脚本，可以轻松的帮你完成安装过程。
 
 
-已支持自动化安装的linux系统
-------------------------------------
+安装系统依赖(centos6/7)
+--------------------------------------
 
-CentOS 6 , CentOS 7
+::
 
-脚本路径
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-install/centos-install
-
-安装流程
-------------------------------------
-
-自动化安装过程在终端下执行,以CentOS 为例：
-
-1. 下载脚本::
-
-    $ curl https://raw.githubusercontent.com/talkincode/ToughRADIUS/master/install/centos-install > centos-install
-
-    $ chmod +x centos-install
-
-2. 执行安装::
-
-    $ ./centos-install
-
-在安装过程中会需要用户进行一些交互，如配置选项设置，是否安装本地mysql数据库。
-
-执行完成以上两步可完成所有安装，然后就可以使用了。
+    $ yum update -y
+     
+    # centos 6
+    $ yum install -y  mysql-devel python-devel python-setuptools MySQL-python
+     
+    #centos7
+    $ yum install -y  mariadb-devel python-devel python-setuptools MySQL-python
+     
 
 
-分步骤安装
-~~~~~~~~~~~~~~~~~~~~~~~~~
+MySQL数据库安装
+--------------------------------------
 
-同时该脚本也提供了分步骤安装的支持。
+CentOS 6
+~~~~~~~~~~~~~~~~~~~~~~
 
-安装系统必要的依赖库请执行::
+通过yum工具在线安装MySQL数据库::
 
-    $ ./centos-install depend
+    $ yum install -y mysql-server mysql-devel
     
-安装ToughRADIUS请执行::
+初始化MySQL数据库::
 
-    $ ./centos-install radius
+    $ mysql_install_db
 
-安装mysql(可选)请执行::
+启动MySQL数据库::
 
-    $ ./centos-install mysql
+    $ mysqld_safe & 
 
-定义ToughRADIUS配置执行::
+在centos6环境中可以使用以下指令来以服务模式运行MySQL::
+
+    $ service mysql start 
+
+设置开机启动::
+
+    $ chkconfig mysql on 
+
+
+CentOS 7
+~~~~~~~~~~~~~~~~~~~~~~
+
+通过yum工具在线安装Mariadb数据库::
+
+    $ yum install -y mariadb-server mariadb-devel
+
+初始化Mariadb数据库::
+
+    $ mysql_install_db
+
+启动Mariadb数据库::
+
+    $ mysqld_safe & 
+
+在centos7环境中可以使用以下指令来以服务模式运行Mariadb::
+
+    $ systemctl start mariadb 
+
+设置开机启动::
+
+    $ systemctl enable mariadb 
+
+
+
+安装toughradius
+----------------------------------------
+
+安装完成后，toughctl命令可用。
+
+::
+
+    $ pip install toughradius
     
-    # 如果你选择不在本机安装mysql数据库，应该注意配置你的远程数据库参数
 
-    $ ./centos-install config
+创建配置文件
+----------------------------------------
 
-创建ToughRADIUS数据库请执行::
+请确保你的mysql服务器已经安装运行，根据提示配置正确的数据库连接信息。
 
-    $ ./centos-install initdb
+::
+
+    $ toughctl --config
     
-完成以上所有后快速启动ToughRADIUS::
+    [INFO] - set config...
+    [INPUT] - set your config file path,[ /etc/radiusd.conf ]
+    [INFO] - set default option
+    [INPUT] - set debug [0/1] [0]:
+    [INPUT] - time zone [ CST-8 ]:
+    [INFO] - set database option
+    [INPUT] - database type [mysql]:
+    [INPUT] - database host [127.0.0.1]:
+    [INPUT] - database port [3306]:
+    [INPUT] - database dbname [toughradius]:
+    [INPUT] - database user [root]:
+    [INPUT] - database passwd []:
+    [INPUT] - db pool maxusage [30]:
+    [INFO] - set radiusd option
+    [INPUT] - radiusd authport [1812]:
+    [INPUT] - radiusd acctport [1813]:
+    [INPUT] - radiusd adminport [1815]:
+    [INPUT] - radiusd cache_timeout (second) [600]:
+    [INPUT] - log file [ logs/radiusd.log ]:/var/log/radiusd.log
+    [INFO] - set mysql backup ftpserver option
+    [INPUT] - backup ftphost [127.0.0.1]:
+    [INPUT] - backup ftpport [21]:
+    [INPUT] - backup ftpuser [ftpuser]:
+    [INPUT] - backup ftppwd [ftppwd]:
+    [INFO] - set admin option
+    [INPUT] - admin http port [1816]:
+    [INPUT] - log file [ logs/admin.log ]:/var/log/admin.log
+    [INFO] - set customer option
+    [INPUT] - customer http port [1817]:
+    [INPUT] - log file [ logs/customer.log ]:/var/log/customer.log
+    [SUCC] - config save to /etc/radiusd.conf
 
-    # 在start之前请确认你的配置无误
 
-    $ ./centos-install start 
+初始化数据库
+----------------------------------------
 
-
-进程管理
-------------------------------------
-
-通过以上步骤安装完成后，会提供一个进程管理工具 toughrad
-
-启动ToughRADIUS进程::
-
-    $ toughrad start
-
-停止ToughRADIUS进程::
-
-    $ toughrad stop
-
-重启ToughRADIUS进程::
-
-    $ toughrad restart
+::
     
-升级ToughRADIUS到最新版本::
-
-    $ toughrad upgrade    
-
-启动mysql数据库进程::
-
-    $ toughrad startdb
-
-停止mysql数据库进程::
-
-    $ toughrad stopdb
-
-备份ToughRADIUS主数据库,备份路径在/var/toughradius/databak,若要上传至ftp，请配置/var/toughradius/radiusd.json文件中的备份选项::
-
-    $ toughrad backupdb
-
-跟踪数据库日志::
-
-    $ toughrad tracedb
+    #还未创建数据库，使用参数 initdb 1 或 initdb 2
+    $ toughctl --initdb 1
+     
+    #已创建数据库，使用参数 initdb 3
+    $ toughctl --initdb 3
     
-跟踪radius日志::
+运行服务
+----------------------------------------
 
-    $ toughrad tracerad
+::
+
+    #radius认证计费服务
+    $ toughctl --radiusd
+     
+    #radius管理控制台服务
+    $ toughctl --admin
+     
+    #radius用户自助服务
+    $ toughctl --customer
     
-跟踪管理控制台日志::
 
-    $ toughrad traceadmin
+以守护进程模式运行
+----------------------------------------
+
+::
+
+    #启动服务，参数选择 [all|radiusd|admin|customer]
     
-跟踪自助服务控制台日志::
+    $ toughctl --start all 
+    
+    #停止服务 参数选择 [all|radiusd|admin|customer]
+    
+    $ toughctl --stop all 
+     
 
-    $ toughrad tracecustomer    
+    
+web管理控制台的使用
+----------------------------------------
+
+当安装部署完成后可使用浏览器进入管理控制台进行操作。
+
+默认地址与端口：http://serverip:1816 
+ 
+默认管理员与密码：admin/root
+
+
+自助服务系统的使用
+----------------------------------------
+
+自助服务系统运行于一个独立的进程。
+
+默认地址与端口:http://serverip:1817
