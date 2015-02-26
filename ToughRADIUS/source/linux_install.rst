@@ -164,7 +164,9 @@ CentOS 7
     
     $ toughctl --stop all 
      
-
+    #添加系统自启动
+    
+    $ echo "toughctl --start all" >> /etc/rc.local
     
 web管理控制台的使用
 ----------------------------------------
