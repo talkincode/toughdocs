@@ -192,7 +192,13 @@ web管理控制台的使用
 
 ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统openssl已安装，如果在安装toughradius的过程中遇到编译错误，可能是遇到了缺少相关依赖库，比较典型的如::
 
-    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -DUSE__THREAD -I/usr/include/ffi -I/usr/include/libffi -I/usr/include/python2.7 -c c/_cffi_backend.c -o build/temp.linux-x86_64-2.7/c/_cffi_backend.o
+    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 
+    -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4 -grecord-gcc-switches 
+    -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall 
+    -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4
+     -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -DUSE__THREAD 
+    -I/usr/include/ffi -I/usr/include/libffi -I/usr/include/python2.7 -c c/_cffi_backend.c 
+    -o build/temp.linux-x86_64-2.7/c/_cffi_backend.o
 
     c/_cffi_backend.c:13:17: 致命错误：ffi.h：没有那个文件或目录
 
@@ -203,7 +209,11 @@ ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统ope
 
     error: command 'gcc' failed with exit status 1
 
-    Command "/usr/bin/python -c "import setuptools, tokenize;__file__='/tmp/pip-build-75iRmo/cffi/setup.py';exec(compile(getattr(tokenize, 'open', open)(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install –record /tmp/pip-GbVC1m-record/install-record.txt –single-version-externally-managed –compile" failed with error code 1 in /tmp/pip-build-75iRmo/cffi
+    Command "/usr/bin/python -c "import setuptools, tokenize;
+    __file__='/tmp/pip-build-75iRmo/cffi/setup.py';exec(compile(getattr(tokenize, 
+    'open', open)(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install 
+    –record /tmp/pip-GbVC1m-record/install-record.txt –single-version-externally-managed 
+    –compile" failed with error code 1 in /tmp/pip-build-75iRmo/cffi
 
 这是由于缺少libffi-devel导致，在centos下通过以下指令安装::
 
