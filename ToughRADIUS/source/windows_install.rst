@@ -17,7 +17,16 @@ ToughRADIUS版本下载
 数据库安装配置
 --------------------------------
 
-本例中我们以MySQL作为示例，首先前往mysql服务器下载地址：
+如果使用sqlite数据库，则只需简单配置如下即可,使用sqlite无需安装任何数据库软件。
+
+::
+
+    [database]
+    dbtype = sqlite
+    dburl = sqlite:///./toughradius.sqlite3
+
+
+下面我们以MySQL作为示例，首先前往mysql服务器下载地址：
 
 ::
 
@@ -151,14 +160,13 @@ ToughRADIUS版本下载
 ::
 
     [database]
+    # dbtype = sqlite
+    # dburl = sqlite:////tmp/toughradius.sqlite3
+    echo = false
     dbtype = mysql
-    host = 127.0.0.1
-    port = 3306
-    db = toughradius
-    maxusage = 10
-    charset = utf8
-    user = root
-    passwd = root
+    dburl = mysql://root:root@127.0.0.1/toughradius?charset=utf8
+    pool_size = 30
+    pool_recycle = 300
 
 
 关于更多的配置细节请参考章节《系统全局配置说明》
@@ -168,22 +176,15 @@ ToughRADIUS版本下载
 
 ::
 
-    toughctl.exe —initdb 1 -c radiusd.conf
+    toughctl.exe —initdb -c radiusd.conf
 
 输出如下：
 
 ::
 
-    C:\toughradius>toughctl.exe --initdb 1 -c radiusd.conf
-    starting create and init database...
-    drop and create database ?[n]y
-    drop database toughradius
-    create database toughradius DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci
-    commit
-    init database ?[n]y
-
-
-—initdb 有三个级别 1是交互式创建与初始化数据库，2是无交互，直接创建与初始化，3是对已手工创建的数据库进行表重建并初始化。
+    C:\toughradius>toughctl.exe --initdb -c radiusd.conf
+    starting update database...
+    update database done
 
 .. topic:: 注意
 
@@ -246,20 +247,16 @@ radiusd.conf是ToughRADIUS的全局配置文件，可以指定所有的系统参
     [database]
     # 数据库类型，支持Sqlite, Oracle, MySQL, PostgreSQL, MSSQL
     dbtype = mysql
-    # 数据库服务器地址
-    host = 127.0.0.1
-    # 数据库服务器端口
-    port = 3306
-    # ToughRADUS数据库名
-    db = toughradius
-    # 连接池最大连接数
-    maxusage = 10
-    # 数据库字符集
-    charset = utf8
-    # 数据库用户
-    user = root
-    # 数据库用户密码
-    passwd = 
+    # dbtype = sqlite
+    # dburl = sqlite:////tmp/toughradius.sqlite3
+    # 是否打印sql语句调试
+    echo = false
+    # 数据库地址，每种类型的数据库都不太一样，注意安装文档说明
+    dburl = mysql://root:root@127.0.0.1/toughradius?charset=utf8
+    # 数据库连接池最大数
+    pool_size = 30
+    # 数据库连接检测间隔，秒
+    pool_recycle = 300
 
 
 Radius核心认证计费服务配置

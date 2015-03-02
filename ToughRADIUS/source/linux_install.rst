@@ -20,7 +20,6 @@ ToughRADIUS是基于Python及高性能异步网络框架Twisted开发，对linux
     $ yum install -y  mariadb-devel python-devel python-setuptools MySQL-python
      
 
-
 MySQL数据库安装
 --------------------------------------
 
@@ -88,6 +87,12 @@ CentOS 7
 
 请确保你的mysql服务器已经安装运行，根据提示配置正确的数据库连接信息。
 
+对于mysql，dburl格式为
+
+::
+
+    mysql://user:passwd@host:port/dbname?charset=utf8
+
 ::
 
     $ toughctl --config
@@ -99,12 +104,10 @@ CentOS 7
     [INPUT] - time zone [ CST-8 ]:
     [INFO] - set database option
     [INPUT] - database type [mysql]:
-    [INPUT] - database host [127.0.0.1]:
-    [INPUT] - database port [3306]:
-    [INPUT] - database dbname [toughradius]:
-    [INPUT] - database user [root]:
-    [INPUT] - database passwd []:
-    [INPUT] - db pool maxusage [30]:
+    [INPUT] - database dburl [sqlite:////tmp/toughradius.sqlite3]:
+    [INPUT] - database echo [false]:
+    [INPUT] - database pool_size [30]:
+    [INPUT] - database pool_recycle(second) [300]:
     [INFO] - set radiusd option
     [INPUT] - radiusd authport [1812]:
     [INPUT] - radiusd acctport [1813]:
@@ -125,16 +128,26 @@ CentOS 7
     [SUCC] - config save to /etc/radiusd.conf
 
 
+如果使用sqlite数据库，则只需简单配置如下即可,使用sqlite无需安装任何数据库软件。
+
+::
+
+    [database]
+    dbtype = sqlite
+    dburl = sqlite:////tmp/toughradius.sqlite3
+
+
+
 初始化数据库
 ----------------------------------------
 
+注意此操作会重建所有数据库表，请注意备份重要数据。
+
 ::
-    
-    #还未创建数据库，使用参数 initdb 1 或 initdb 2
-    $ toughctl --initdb 1
-     
-    #已创建数据库，使用参数 initdb 3
-    $ toughctl --initdb 3
+
+    $ toughctl --initdb 
+
+
     
 运行服务
 ----------------------------------------
@@ -150,17 +163,22 @@ CentOS 7
     #radius用户自助服务
     $ toughctl --customer
     
+    #通过一个进程运行所有服务
+    $ toughctl --standalone
+    
 
 以守护进程模式运行
 ----------------------------------------
 
+当启动standalone模式时，只会启动一个进程.
+
 ::
 
-    #启动服务，参数选择 [all|radiusd|admin|customer]
+    #启动服务，参数选择 [all|radiusd|admin|customer|standalone]
     
     $ toughctl --start all 
     
-    #停止服务 参数选择 [all|radiusd|admin|customer]
+    #停止服务 参数选择 [all|radiusd|admin|customer|standalone]
     
     $ toughctl --stop all 
      
@@ -253,8 +271,6 @@ ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统ope
 ssl,privatekey,certificate是新增的三个配置选项，启用ssl就设置为true或on,否则为false或off，privatekeycertificate与certificate文件必须存在。
 
 接下来就可以启动系统了。
-
-注意，只有当使用 toughctl --start 模式启动才会生效。
 
 
 使用https访问管理控制台和自助服务系统
