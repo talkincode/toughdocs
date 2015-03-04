@@ -3,25 +3,46 @@ ToughRADIUS在linux下的安装配置
 
 ToughRADIUS是基于Python及高性能异步网络框架Twisted开发，对linux系统完美支持，可以提供更高的性能和稳定性。
 
-目前在Linux环境下，ToughRADIUS提供了自动化安装脚本，可以轻松的帮你完成安装过程。
-
 
 安装系统依赖(centos6/7)
 --------------------------------------
 
+安装系统python依赖 python-devel python-setuptools,安装python-setuptools后，easy_install命令将可用
+
 ::
 
-    $ yum update -y
-     
-    # centos 6
-    $ yum install -y  mysql-devel python-devel python-setuptools MySQL-python
-     
-    #centos7
-    $ yum install -y  mariadb-devel python-devel python-setuptools MySQL-python
-     
+    $ yum update -y  && yum install -y  python-devel python-setuptools 
+    
+toughradius以python标准模块发布，因此我们需要用到python的专用pip包管理工具来安装，以下指令可以安装pip工具，安装完成后，pip命令将可用。
 
-MySQL数据库安装
+::
+
+    $ easy_install pip
+    
+
+.. topic:: 关于数据库的选择
+
+    toughradius默认采用嵌入式数据库sqlite，sqlite通常已经系统内置，不需要另行安装。
+
+    如果你需要使用mysql数据库，则需要安装额外的mysql客户端驱动::
+    
+        # centos 6
+        $ yum install -y  mysql-devel MySQL-python
+        
+        # centos7
+        $ yum install -y  mariadb-devel MySQL-python
+        
+.. topic:: 温馨提示
+
+    Mysql是一个专业的数据库软件，不过在实际的安装过程中也会出现一些比较专业的难题，建议你在计划使用前多了解关于MySQL的相关知识。
+    
+    另外Sqlite是一个优秀的，高性能的嵌入式数据库软件，使用备份方便，极力推荐使用。
+
+
+Mysql数据库安装
 --------------------------------------
+
+当你需要使用Mysql数据库时，你需要在系统上安装并运行它，如果你并不需要采用mysql作为存储，而是使用默认sqlite作为数据存储，你可以略过下面的步骤。
 
 CentOS 6
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -85,7 +106,7 @@ CentOS 7
 创建配置文件
 ----------------------------------------
 
-请确保你的mysql服务器已经安装运行，根据提示配置正确的数据库连接信息。
+如果你使用mysql数据库，请请确保你的mysql服务器已经安装运行，根据提示配置正确的数据库连接信息。
 
 对于mysql，dburl格式为
 
@@ -93,49 +114,57 @@ CentOS 7
 
     mysql://user:passwd@host:port/dbname?charset=utf8
 
+通过toughctl --config进行配置文件的初始化，按照交互提示一步一步进行
+
 ::
 
     $ toughctl --config
     
     [INFO] - set config...
+    
+设置目标配置文件的位置::
+    
     [INPUT] - set your config file path,[ /etc/radiusd.conf ]
+
+设置基本配置选项::
+
     [INFO] - set default option
-    [INPUT] - set debug [0/1] [0]:
+    [INPUT] - set debug [false]:
     [INPUT] - time zone [ CST-8 ]:
+    
+数据库选项（默认sqlite）, 对于sqlite，以下pool_size与pool_recycle可以略过::
+
     [INFO] - set database option
-    [INPUT] - database type [mysql]:
+    [INPUT] - database type [sqlite]:
     [INPUT] - database dburl [sqlite:////tmp/toughradius.sqlite3]:
     [INPUT] - database echo [false]:
     [INPUT] - database pool_size [30]:
     [INPUT] - database pool_recycle(second) [300]:
+    
+radius认证计费选项::
+    
     [INFO] - set radiusd option
     [INPUT] - radiusd authport [1812]:
     [INPUT] - radiusd acctport [1813]:
     [INPUT] - radiusd adminport [1815]:
     [INPUT] - radiusd cache_timeout (second) [600]:
     [INPUT] - log file [ logs/radiusd.log ]:/var/log/radiusd.log
-    [INFO] - set mysql backup ftpserver option
-    [INPUT] - backup ftphost [127.0.0.1]:
-    [INPUT] - backup ftpport [21]:
-    [INPUT] - backup ftpuser [ftpuser]:
-    [INPUT] - backup ftppwd [ftppwd]:
+
+管理控制台选项::
+
     [INFO] - set admin option
     [INPUT] - admin http port [1816]:
     [INPUT] - log file [ logs/admin.log ]:/var/log/admin.log
+    
+自助服务系统选项::
+    
     [INFO] - set customer option
     [INPUT] - customer http port [1817]:
     [INPUT] - log file [ logs/customer.log ]:/var/log/customer.log
+
+配置完成，配置文件被自动保存到目标文件::
+
     [SUCC] - config save to /etc/radiusd.conf
-
-
-如果使用sqlite数据库，则只需简单配置如下即可,使用sqlite无需安装任何数据库软件。
-
-::
-
-    [database]
-    dbtype = sqlite
-    dburl = sqlite:////tmp/toughradius.sqlite3
-
 
 
 初始化数据库
@@ -208,7 +237,15 @@ web管理控制台的使用
 在linux下使用HTTPS
 ----------------------------------------
 
-ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统openssl已安装，如果在安装toughradius的过程中遇到编译错误，可能是遇到了缺少相关依赖库，比较典型的如::
+ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统openssl已安装，并安装python的openssl相关依赖包
+
+::
+    
+    $ pip install pyOpenSSL>=0.14
+    
+    $ pip install service_identity
+
+如果在安装toughradius的过程中遇到编译错误，可能是遇到了缺少相关依赖库，比较典型的如::
 
     gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 
     -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4 -grecord-gcc-switches 
@@ -241,7 +278,7 @@ ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统ope
 
     $ apt-get install -y libffi-dev
 
-生成服务器密钥以及签名
+生成服务器密钥以及签名证书
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
  ::

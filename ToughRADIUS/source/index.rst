@@ -36,19 +36,6 @@ ToughRADIUS资源 BitTorrent Sync 共享密钥：BD7BDGKPHFVFRU3CFZ5576Y72E7G4QN
     linux_install
 
 
-
-.. _develop-docs:
-
-开发手册
---------
-
-.. toctree::
-    :maxdepth: 3
-
-    develop/database
-    develop/dbdev
-    
-
 .. _bas-docs:
 
 设备对接手册

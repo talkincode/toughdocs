@@ -12,8 +12,6 @@ ToughRADIUS版本下载
     http://www.toughradius.net/download.html
 
 
-
-
 数据库安装配置
 --------------------------------
 
@@ -25,6 +23,15 @@ ToughRADIUS版本下载
     dbtype = sqlite
     dburl = sqlite:///./toughradius.sqlite3
 
+
+当你需要使用Mysql数据库时，你需要在系统上安装并运行它，如果你并不需要采用mysql作为存储，而是使用默认sqlite作为数据存储，你可以略过下面的步骤。
+
+.. topic:: 温馨提示
+
+    Mysql是一个专业的数据库软件，不过在实际的安装过程中也会出现一些比较专业的难题，建议你在计划使用前多了解关于MySQL的相关知识。
+    
+    另外Sqlite是一个优秀的，高性能的嵌入式数据库软件，使用备份方便，极力推荐使用。
+    
 
 下面我们以MySQL作为示例，首先前往mysql服务器下载地址：
 
@@ -160,13 +167,13 @@ ToughRADIUS版本下载
 ::
 
     [database]
-    # dbtype = sqlite
-    # dburl = sqlite:////tmp/toughradius.sqlite3
+    dbtype = sqlite
+    dburl = sqlite:///./toughradius.sqlite3
     echo = false
-    dbtype = mysql
-    dburl = mysql://root:root@127.0.0.1/toughradius?charset=utf8
-    pool_size = 30
-    pool_recycle = 300
+    #dbtype = mysql
+    #dburl = mysql://root:root@127.0.0.1/toughradius?charset=utf8
+    #pool_size = 30
+    #pool_recycle = 300
 
 
 关于更多的配置细节请参考章节《系统全局配置说明》
@@ -296,16 +303,6 @@ Radius核心认证计费服务配置
     port = 1817
     # customer子系统的日志文件位置
     logfile = logs/radiusd.log
-
-数据库备份配置，目前仅适用于linux环境
-
-::
-
-    [backup]
-    ftpserver = 127.0.0.1
-    ftpport = 21
-    ftpuser = user
-    ftppwd = pwd
 
 
 配置文件的位置：
