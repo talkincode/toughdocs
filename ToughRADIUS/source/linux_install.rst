@@ -170,7 +170,13 @@ radius认证计费选项::
 初始化数据库
 ----------------------------------------
 
-注意此操作会重建所有数据库表，请注意备份重要数据。
+手工创建数据库，sqlite可以忽略这一步
+
+::
+
+    $ echo "create database toughradius DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci" | mysql
+
+使用toughctl工具初始化表，注意此操作会重建所有数据库表，请注意备份重要数据。
 
 ::
 
@@ -214,6 +220,8 @@ radius认证计费选项::
     #添加系统自启动
     
     $ echo "toughctl --start all" >> /etc/rc.local
+    
+    
     
 web管理控制台的使用
 ----------------------------------------
@@ -318,3 +326,88 @@ ssl,privatekey,certificate是新增的三个配置选项，启用ssl就设置为
     https://127.0.0.1:1816
     
     https://127.0.0.1:1817
+
+
+系统全局配置说明
+--------------------------------
+
+radiusd.conf是ToughRADIUS的全局配置文件，可以指定所有的系统参数。
+
+通用选项
+
+::
+
+    [DEFAULT]
+    # 是否以debug模式启动，0为否，1为是，在debug模式下，可以输出更多的信息
+    debug = 1
+    # 时区设置，适用于linux环境
+    tz = CST-8
+    # 系统用户数据加密，cookie加密使用的密钥，长度为8的倍数，注意不要泄露
+    secret = 0UhbGOuqKXnMmpfRbma76hkzWTl4WUER
+    # 如果启用https，需要加入以下三个选项
+    ssl = true
+    privatekey = /var/toughradius/privkey.pem
+    certificate = /var/toughradius/cacert.pem
+
+
+数据库配置选项
+
+::
+
+    [database]
+    # 数据库类型，支持Sqlite, Oracle, MySQL, PostgreSQL, MSSQL
+    dbtype = mysql
+    # dbtype = sqlite
+    # dburl = sqlite:////tmp/toughradius.sqlite3
+    # 是否打印sql语句调试
+    echo = false
+    # 数据库地址，每种类型的数据库都不太一样，注意安装文档说明
+    dburl = mysql://root:root@127.0.0.1/toughradius?charset=utf8
+    # 数据库连接池最大数
+    pool_size = 30
+    # 数据库连接检测间隔，秒
+    pool_recycle = 300
+
+
+Radius核心认证计费服务配置
+
+::
+
+    [radiusd]
+    # 认证端口
+    authport = 1812
+    # 计费端口
+    acctport = 1813
+    # 管理端口，提供管理控制台调用
+    adminport = 1815
+    # radiusd子系统的日志文件位置
+    logfile = /var/log/radiusd.log
+    # Radius数据缓存最大时间，默认600秒
+    cache_timeout = 600
+
+
+管理控制台配置
+
+::
+
+    [admin]
+    # 管理控制台web端口
+    port = 1816
+    # admin子系统的日志文件位置
+    logfile = /var/log/admin.log
+
+
+自助服务系统配置
+
+::
+
+    [customer]
+    # 自助服务系统web端口
+    port = 1817
+    # customer子系统的日志文件位置
+    logfile = /var/log/customer.log
+
+
+配置文件的位置：
+
+使用toughctl -c 选项可以指定配置文件的位置，默认情况下会从/etc/radiusd.conf位置查找。
