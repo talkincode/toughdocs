@@ -221,6 +221,8 @@ radius认证计费选项::
     
     $ echo "toughctl --start all" >> /etc/rc.local
     
+    $ chmod +x /etc/rc.local
+    
     
     
 web管理控制台的使用
