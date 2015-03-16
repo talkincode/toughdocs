@@ -22,7 +22,6 @@ ToughRADIUS主站点:http://www.toughradius.net
 
 ToughRADIUS交流社区:http://forum.toughradius.net
 
-ToughRADIUS资源 BitTorrent Sync 共享密钥：BD7BDGKPHFVFRU3CFZ5576Y72E7G4QNIL
 
 .. _install-docs:
 
