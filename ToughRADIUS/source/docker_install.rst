@@ -52,65 +52,32 @@ Windows
 
 请下载Windows安装文件：https://github.com/boot2docker/windows-installer/releases/download/v1.4.1/docker-install.exe
 
-运行ToughRADIUS
+
+
+获取ToughRADIUS镜像
 ------------------------------------
 
-关于容器的概念，你可以简单地理解为轻量的虚拟机。
+::
+
+    docker pull index.alauda.cn/toughstruct/toughradius
+
 
 创建并运行容器
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-通过Docker部署ToughRADIUS，需要创建一个容器，以后的更新可以直接在此容器上进行。
+通过Docker部署ToughRADIUS，需要创建一个容器，以后的更新可以直接在此容器上进行::
 
-首先创建一个本地目录 /var/toughradius,Docker会利用此目录来创建mysql的数据库文件，以及配置文件，以后备份此目录即可。
+    docker run -d --name trserver --net host toughstruct/toughradius:latest
 
-::
-
-    $ mkdir /var/toughradius 
-
-    $ docker run -d -P -v /var/toughradius:/var/toughradius \
-      -p 3306:3306 -p 1812:1812/udp -p 1813:1813/udp \
-      -p 1815:1815 -p 1816:1816 -p 1817:1817\
-      --name toughradius talkincode/centos7-toughradius
-      
-.. topic:: 注意
-
-    数据库3306端口并非必须开放，如果你不需要使用客户端工具连接管理，可以取消3306端口的映射。
-    如果你需要使用客户端工具连接管理，请注意修改默认数据库管理账号admin的密码，默认为radius。
-
-以上指令自动下载toughradius镜像,创建名称为toughradius的容器，以守护进程模式运行，容器只需创建一次，以上命令只需首次运行即可。
-
-容器将本身端口与主机一一映射，如果有端口冲突请自行修改，格式 -p 主机端口:容器端口
+关于trserver这个容器名称，可以修改为你想要的名称，比如myradius等，注意各个操作环节保持名称一致
 
 运行 docker ps -a 可以看到容器进程信息
 
-运行 docker logs toughradius 查看容器日志输出
-
-如果你看到以下日志内容，说明运行成功了::
-
-    150124 16:26:58 mysqld_safe Logging to '/var/toughradius/log/mysqld.log'.
-    150124 16:26:58 mysqld_safe Starting mysqld daemon with databases from /var/toughradius/mysql
-    starting create and init database...
-    150124 16:27:05 mysqld_safe mysqld from pid file /var/run/mysqld/mysqld.pid ended
-    starting mysqd...
-    150124 16:27:07 mysqld_safe Logging to '/var/toughradius/log/mysqld.log'.
-    150124 16:27:07 mysqld_safe Starting mysqld daemon with databases from /var/toughradius/mysql
-    starting supervisord...
-    2015-01-24 16:27:15,055 CRIT Supervisor running as root (no user in config file)
-    2015-01-24 16:27:15,072 INFO RPC interface 'supervisor' initialized
-    2015-01-24 16:27:15,073 CRIT Server 'unix_http_server' running without any HTTP authentication checking
-    2015-01-24 16:27:15,073 INFO supervisord started with pid 420
-    2015-01-24 16:27:16,076 INFO spawned: 'rad_console' with pid 423
-    2015-01-24 16:27:16,078 INFO spawned: 'radiusd' with pid 424
-    2015-01-24 16:27:17,136 INFO success: rad_console entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
-    2015-01-24 16:27:17,136 INFO success: radiusd entered RUNNING state, process has stayed up for > than 1 seconds (startsecs)
+运行 docker logs trserver 查看容器日志输出
 
 打开浏览器访问 http://serverip:1816,可以进入web管理登陆界面了。
 
-
-.. topic:: 注意
-
-    安装完成后，你可以通过mysql客户端管理工具连接服务器的3306端口进入管理，默认管理用户密码为admin/radius，在正式环境中，请修改它，或者，不要开放3306端口。
+打开浏览器访问 http://serverip:1818,可以进入web升级管理界面，可以方便的通过web控制面板实现版本的升级切换。
 
 
 启动，停止，重启容器
@@ -118,11 +85,11 @@ Windows
 
 ::
 
-    $ docker start toughradius
+    $ docker start trserver
 
-    $ docker stop toughradius
+    $ docker stop trserver
 
-    $ docker restart toughradius
+    $ docker restart trserver
 
 
 ToughRADIUS版本更新
@@ -130,52 +97,5 @@ ToughRADIUS版本更新
 
 当ToughRADIUS版本更新时，不需要重新创建容器，只需要执行简单地更新指令即可::
 
-    $ docker exec toughradius toughrad upgrade
-
-    # 输出以下内容说明更新成功
-
-    starting upgrade...
-    From https://github.com/talkincode/ToughRADIUS
-     * branch            master     -> FETCH_HEAD
-    ...
-    ...
-    radiusd: stopped
-    radiusd: started
-    rad_console: stopped
-    rad_console: started
-    rad_customer: stopped
-    rad_customer: started
-    
-    upgrade ok
-
-
-配置文件修改
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-配置文件在/var/toughradius/radiusd.json
-
-你可以修改其中的内容，你甚至可以指定另外的mysql数据库。
-
-如果你修改了容器映射端口，你可以删除容器再重新创建。
-
-删除容器::
-
-    $ docker rm toughradius
-
-重新创建容器时，只要没有删除/var/toughradius下的install.log，是不会重新创建和覆盖数据文件和配置文件的。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    $ docker exec trserver toughrad upgrade
 

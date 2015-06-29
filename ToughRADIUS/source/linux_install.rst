@@ -34,7 +34,7 @@ toughradius以python标准模块发布，因此我们需要用到python的专用
         
 .. topic:: 温馨提示
 
-    Mysql是一个专业的数据库软件，不过在实际的安装过程中也会出现一些比较专业的难题，建议你在计划使用前多了解关于MySQL的相关知识。
+    Mysql是一个专业的数据库软件，不过在实际的安装过程中也会出现一些比较专业的难题，建议在计划使用前多了解关于MySQL的相关知识。
     
     另外Sqlite是一个优秀的，高性能的嵌入式数据库软件，使用备份方便，极力推荐使用。
 
@@ -91,7 +91,9 @@ CentOS 7
 
     $ systemctl enable mariadb 
 
+.. topic:: 温馨提示
 
+    在实际生产环境中，要发挥MySQL的优势，还需要针对性的进行多项优化，请根据你的实际环境参考MySQL相关文档进行操作。
 
 安装toughradius
 ----------------------------------------
@@ -102,9 +104,24 @@ CentOS 7
 
     $ pip install toughradius
     
+.. topic:: 注意
+
+    在某些linux发行版，pip会有些bug，如果以上指令无法安装成功，可以尝试：
+    
+    pip intsall -U https://github.com/talkincode/ToughRADIUS/archive/stable.zip
+    
 
 创建配置文件
 ----------------------------------------
+
+通过toughctl --echo_radiusd_cnf 进行配置文件的初始化，
+
+::
+
+    $ toughctl --echo_radiusd_cnf > /etc/radiusd.conf
+    
+以上操作将会生成/etc/radiusd.conf配置文件，根据实际环境进行修改，关于配置文件的内容，请参考章节《系统全局配置说明》
+    
 
 如果你使用mysql数据库，请请确保你的mysql服务器已经安装运行，根据提示配置正确的数据库连接信息。
 
@@ -113,58 +130,6 @@ CentOS 7
 ::
 
     mysql://user:passwd@host:port/dbname?charset=utf8
-
-通过toughctl --config进行配置文件的初始化，按照交互提示一步一步进行
-
-::
-
-    $ toughctl --config
-    
-    [INFO] - set config...
-    
-设置目标配置文件的位置::
-    
-    [INPUT] - set your config file path,[ /etc/radiusd.conf ]
-
-设置基本配置选项::
-
-    [INFO] - set default option
-    [INPUT] - set debug [false]:
-    [INPUT] - time zone [ CST-8 ]:
-    
-数据库选项（默认sqlite）, 对于sqlite，以下pool_size与pool_recycle可以略过::
-
-    [INFO] - set database option
-    [INPUT] - database type [sqlite]:
-    [INPUT] - database dburl [sqlite:////tmp/toughradius.sqlite3]:
-    [INPUT] - database echo [false]:
-    [INPUT] - database pool_size [30]:
-    [INPUT] - database pool_recycle(second) [300]:
-    
-radius认证计费选项::
-    
-    [INFO] - set radiusd option
-    [INPUT] - radiusd authport [1812]:
-    [INPUT] - radiusd acctport [1813]:
-    [INPUT] - radiusd adminport [1815]:
-    [INPUT] - radiusd cache_timeout (second) [600]:
-    [INPUT] - log file [ logs/radiusd.log ]:/var/log/radiusd.log
-
-管理控制台选项::
-
-    [INFO] - set admin option
-    [INPUT] - admin http port [1816]:
-    [INPUT] - log file [ logs/admin.log ]:/var/log/admin.log
-    
-自助服务系统选项::
-    
-    [INFO] - set customer option
-    [INPUT] - customer http port [1817]:
-    [INPUT] - log file [ logs/customer.log ]:/var/log/customer.log
-
-配置完成，配置文件被自动保存到目标文件::
-
-    [SUCC] - config save to /etc/radiusd.conf
 
 
 初始化数据库
@@ -176,7 +141,7 @@ radius认证计费选项::
 
     $ echo "create database toughradius DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci" | mysql
 
-使用toughctl工具初始化表，注意此操作会重建所有数据库表，请注意备份重要数据。
+使用toughctl工具初始化所有表，注意此操作会重建所有数据库表，请注意备份重要数据。
 
 ::
 
@@ -198,14 +163,12 @@ radius认证计费选项::
     #radius用户自助服务
     $ toughctl --customer
     
-    #通过一个进程运行所有服务
+    #通过一个进程运行所有服务（radiusd，admin，customer）
     $ toughctl --standalone
     
 
 以守护进程模式运行
 ----------------------------------------
-
-当启动standalone模式时，只会启动一个进程.
 
 ::
 
@@ -217,13 +180,13 @@ radius认证计费选项::
     
     $ toughctl --stop all 
      
-    #添加系统自启动
+    #添加系统自启动,该脚本不能用于centos7，根据实际环境可对/etc/init.d/radiusd进一步修改。
     
-    $ echo "toughctl --start all" >> /etc/rc.local
+    $ toughctl --echo_radiusd_script > /etc/init.d/radiusd
     
-    $ chmod +x /etc/rc.local
+    $ chmod +x /etc/init.d/radiusd
     
-    
+当启动all时，将会同时启动radiusd,admin,customer三个服务进程，当启动standalone模式时，只会启动一个进程. 
     
 web管理控制台的使用
 ----------------------------------------
@@ -243,6 +206,29 @@ web管理控制台的使用
 默认地址与端口:http://serverip:1817
 
 
+数据库的备份管理
+----------------------------------------
+
+toughradius可以支持多种类型数据库，在备份格式上，采用了通用的json格式来备份。
+
+以下指令可以用来进行数据库备份：
+
+    $ toughctl --dumpdb /var/toughradius/data/toughradius-db-20150203-01.json.gz
+
+以下指令可以用来从备份数据文件恢复数据库：
+
+    $ toughctl --restoredb /var/toughradius/data/toughradius-db-20150203-01.json.gz
+    
+.. topic:: 注意
+
+    数据备份恢复，并不包括表结构，在恢复数据库前，可以先用toughctl --initdb初始化表结构。
+    
+    数据库备份管理是一项严谨的工作，请根据你的实际环境进行操作。
+
+在web管理界面上,提供了手动备份方式。
+
+另外可以结合linux的crontab来实现数据库的自动备份。
+
 
 在linux下使用HTTPS
 ----------------------------------------
@@ -250,43 +236,15 @@ web管理控制台的使用
 ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统openssl已安装，并安装python的openssl相关依赖包
 
 ::
+
+    $ yum install -y openssl
+    
+    $ yum install -y libffi-devel
     
     $ pip install pyOpenSSL>=0.14
     
     $ pip install service_identity
 
-如果在安装toughradius的过程中遇到编译错误，可能是遇到了缺少相关依赖库，比较典型的如::
-
-    gcc -pthread -fno-strict-aliasing -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 
-    -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4 -grecord-gcc-switches 
-    -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -DNDEBUG -O2 -g -pipe -Wall 
-    -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong –param=ssp-buffer-size=4
-     -grecord-gcc-switches -m64 -mtune=generic -D_GNU_SOURCE -fPIC -fwrapv -fPIC -DUSE__THREAD 
-    -I/usr/include/ffi -I/usr/include/libffi -I/usr/include/python2.7 -c c/_cffi_backend.c 
-    -o build/temp.linux-x86_64-2.7/c/_cffi_backend.o
-
-    c/_cffi_backend.c:13:17: 致命错误：ffi.h：没有那个文件或目录
-
-    ＃include <ffi.h>
-
-                     ^
-    编译中断。
-
-    error: command 'gcc' failed with exit status 1
-
-    Command "/usr/bin/python -c "import setuptools, tokenize;
-    __file__='/tmp/pip-build-75iRmo/cffi/setup.py';exec(compile(getattr(tokenize, 
-    'open', open)(__file__).read().replace('\r\n', '\n'), __file__, 'exec'))" install 
-    –record /tmp/pip-GbVC1m-record/install-record.txt –single-version-externally-managed 
-    –compile" failed with error code 1 in /tmp/pip-build-75iRmo/cffi
-
-这是由于缺少libffi-devel导致，在centos下通过以下指令安装::
-
-    $ yum install -y libffi-devel
-    
-在ubuntu下通过以下指令安装::
-
-    $ apt-get install -y libffi-dev
 
 生成服务器密钥以及签名证书
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -310,10 +268,12 @@ ToughRADIUS通过ssl进一步加强了系统的安全性。首先确保系统ope
     [DEFAULT]
     debug = 1
     tz = CST-8
+    # ------新增内容-------- #
     secret = LpWE9AtfDPQ3ufXBS6gJ37WW8TnSF920
     ssl = true
     privatekey = /var/toughradius/privkey.pem
     certificate = /var/toughradius/cacert.pem
+    # ------新增内容-------- #
 
 ssl,privatekey,certificate是新增的三个配置选项，启用ssl就设置为true或on,否则为false或off，privatekeycertificate与certificate文件必须存在。
 
@@ -369,6 +329,8 @@ radiusd.conf是ToughRADIUS的全局配置文件，可以指定所有的系统参
     pool_size = 30
     # 数据库连接检测间隔，秒
     pool_recycle = 300
+    # 数据库备份路径
+    backup_path = /var/toughradius/data
 
 
 Radius核心认证计费服务配置
@@ -376,6 +338,8 @@ Radius核心认证计费服务配置
 ::
 
     [radiusd]
+    # 监听地址,如果需要监听指定地址，可使用host选项
+    # host = 127.0.0.1
     # 认证端口
     authport = 1812
     # 计费端口
@@ -393,6 +357,8 @@ Radius核心认证计费服务配置
 ::
 
     [admin]
+    # 监听地址,如果需要监听指定地址，可使用host选项
+    # host = 127.0.0.1
     # 管理控制台web端口
     port = 1816
     # admin子系统的日志文件位置
@@ -404,6 +370,8 @@ Radius核心认证计费服务配置
 ::
 
     [customer]
+    # 监听地址,如果需要监听指定地址，可使用host选项
+    # host = 127.0.0.1
     # 自助服务系统web端口
     port = 1817
     # customer子系统的日志文件位置
