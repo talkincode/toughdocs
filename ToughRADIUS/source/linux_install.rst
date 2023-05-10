@@ -108,7 +108,7 @@ CentOS 7
 
     在某些linux发行版，pip会有些bug，如果以上指令无法安装成功，可以尝试：
     
-    pip intsall -U https://github.com/talkincode/ToughRADIUS/archive/stable.zip
+    pip install -U https://github.com/talkincode/ToughRADIUS/archive/stable.zip
     
 
 创建配置文件
